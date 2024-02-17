@@ -1,5 +1,6 @@
 package com.reactivespring.moviesinfoservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
@@ -71,5 +72,78 @@ public class MovieInfoControllerUnitTest {
                 assertNotNull(movieInfo);
             })
             .jsonPath("$.name").isEqualTo("Dark Knight Rises");
+    }
+
+    @Test
+    void addMovieInfo(){
+        //given
+        var movieInfo = new MovieInfo(null, "Avatar", 2009
+            , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") );
+
+        when(moviesInfoService.addMovieInfo(isA(MovieInfo.class))).thenReturn(
+            Mono.just(new MovieInfo("mockId", "Avatar", 2009
+                , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") ))
+        );
+
+        //when
+        webTestClient.post()
+            .uri(MOVIE_INFO_URL)
+            .bodyValue(movieInfo)
+            .exchange()
+            .expectStatus()
+            .isCreated()
+            .expectBody(MovieInfo.class)
+            .consumeWith(movieInfoEntityExchangeResult -> {
+                var savedMovieInfo = movieInfoEntityExchangeResult.getResponseBody();
+                assert savedMovieInfo != null;
+                assert savedMovieInfo.getMovieInfoId() != null;
+                assertEquals("mockId", savedMovieInfo.getMovieInfoId());
+
+            });
+    }
+
+    @Test
+    void updateMovieInfo(){
+        //given
+        var movieInfoId = "abc";
+        //given
+        var movieInfo = new MovieInfo(null, "Avatar", 2009
+            , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") );
+
+        when(moviesInfoService.updateMovieInfo(isA(MovieInfo.class), isA(String.class))).thenReturn(
+            Mono.just(new MovieInfo(movieInfo.getMovieInfoId(), "Avatar", 2009
+                , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") ))
+        );
+        //when
+        //when
+        webTestClient.put()
+            .uri(MOVIE_INFO_URL + "/{id}", movieInfoId)
+            .bodyValue(movieInfo)
+            .exchange()
+            .expectStatus()
+            .is2xxSuccessful()
+            .expectBody(MovieInfo.class)
+            .consumeWith(movieInfoEntityResult -> {
+                var updatedMovieInfo = movieInfoEntityResult.getResponseBody();
+                assert updatedMovieInfo != null;
+                assert updatedMovieInfo.getName() != null;
+                assertEquals("Avatar", updatedMovieInfo.getName());
+            });
+//            .jsonPath("$.name").isEqualTo("Avatar");
+    }
+
+    @Test
+    void deleteMovieInfo(){
+        //given
+        var movieInfoId = "abc";
+
+        when(moviesInfoService.deleteMovieById(isA(String.class)))
+            .thenReturn(Mono.empty());
+        //when
+        webTestClient.delete()
+            .uri(MOVIE_INFO_URL+"/{id}",movieInfoId)
+            .exchange()
+            .expectStatus()
+            .isNoContent();
     }
 }
