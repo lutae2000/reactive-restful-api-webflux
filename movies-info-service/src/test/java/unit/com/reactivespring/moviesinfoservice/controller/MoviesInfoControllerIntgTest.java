@@ -17,6 +17,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+import reactor.test.StepVerifier;
 
 @SpringBootTest
     (webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -154,5 +157,36 @@ class MoviesInfoControllerIntgTest {
 
 
         //then
+    }
+
+
+    @Test
+    void getMovieInfoByYear(){
+        //given
+        var uri = UriComponentsBuilder.fromUriString(MOVIE_INFO_URL)
+            .queryParam("year", 2005)
+            .buildAndExpand()
+            .toUri();
+
+        //when
+        webTestClient.get()
+            .uri(uri)
+            .exchange()
+            .expectStatus()
+            .is2xxSuccessful()
+            .expectBodyList(MovieInfo.class)
+            .hasSize(1);
+
+        //then
+
+    }
+
+    @Test
+    void findByName(){
+        var movieInfoMono = movieInfoRepository.findByName("The Dark Knight").log();
+
+        StepVerifier.create(movieInfoMono)
+            .expectNextCount(1)
+            .verifyComplete();
     }
 }

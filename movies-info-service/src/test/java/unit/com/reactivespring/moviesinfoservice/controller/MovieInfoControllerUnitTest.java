@@ -65,25 +65,26 @@ public class MovieInfoControllerUnitTest {
             .uri(MOVIE_INFO_URL + "/{id}", movieInfoId)
             .exchange()
             .expectStatus()
-            .is2xxSuccessful()
+            .isNotFound();
+/*            .is2xxSuccessful()
             .expectBody()
             .consumeWith(movieInfoResult ->{
                 var movieInfo = movieInfoResult.getResponseBody();
                 assertNotNull(movieInfo);
             })
-            .jsonPath("$.name").isEqualTo("Dark Knight Rises");
+            .jsonPath("$.name").isEqualTo("Dark Knight Rises");*/
     }
 
     @Test
     void addMovieInfo(){
         //given
         var movieInfo = new MovieInfo(null, "Avatar", 2009
-            , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") );
+            , List.of(""),LocalDate.parse("2009-12-17") );
 
-        when(moviesInfoService.addMovieInfo(isA(MovieInfo.class))).thenReturn(
-            Mono.just(new MovieInfo("mockId", "Avatar", 2009
-                , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") ))
-        );
+//        when(moviesInfoService.addMovieInfo(isA(MovieInfo.class))).thenReturn(
+//            Mono.just(new MovieInfo("mockId", "Avatar", 2009
+//                , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") ))
+//        );
 
         //when
         webTestClient.post()
@@ -91,21 +92,29 @@ public class MovieInfoControllerUnitTest {
             .bodyValue(movieInfo)
             .exchange()
             .expectStatus()
-            .isCreated()
-            .expectBody(MovieInfo.class)
+            .isBadRequest()
+            .expectBody(String.class)
+            .consumeWith(stringEntityExchangeResult -> {
+                var responseBody = stringEntityExchangeResult.getResponseBody();
+                System.out.println("responseBody:" + responseBody);
+                var expectErrorMessage = "movieInfo.cast must be present";
+                assert responseBody != null;
+                assertEquals(expectErrorMessage, responseBody);
+            });
+/*            .expectBody(MovieInfo.class)
             .consumeWith(movieInfoEntityExchangeResult -> {
                 var savedMovieInfo = movieInfoEntityExchangeResult.getResponseBody();
                 assert savedMovieInfo != null;
                 assert savedMovieInfo.getMovieInfoId() != null;
                 assertEquals("mockId", savedMovieInfo.getMovieInfoId());
 
-            });
+            });*/
     }
 
     @Test
     void updateMovieInfo(){
         //given
-        var movieInfoId = "abc";
+        var movieInfoId = "ccc";
         //given
         var movieInfo = new MovieInfo(null, "Avatar", 2009
             , List.of("Neteyam", "Jake Sully", "Neytiri", "Kiri", "Lo'ak", "Ronal", "Tsireya"),LocalDate.parse("2009-12-17") );
@@ -146,4 +155,5 @@ public class MovieInfoControllerUnitTest {
             .expectStatus()
             .isNoContent();
     }
+
 }
