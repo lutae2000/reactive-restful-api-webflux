@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.isA;
 
 import com.reactivespring.domain.Review;
+import com.reactivespring.exceptionHandler.GlobalErrorExceptionHandler;
 import com.reactivespring.handler.ReviewHandler;
 import com.reactivespring.handler.ReviewRouter;
 import com.reactivespring.repository.ReviewReactiveRepository;
@@ -20,7 +21,7 @@ import reactor.core.publisher.Mono;
 import static org.mockito.Mockito.*;
 
 @WebFluxTest
-@ContextConfiguration(classes = {ReviewRouter.class, ReviewHandler.class})
+@ContextConfiguration(classes = {ReviewRouter.class, ReviewHandler.class, GlobalErrorExceptionHandler.class})
 @AutoConfigureWebTestClient
 public class ReviewsUnitTest {
     static String REVIEWS_URL = "/v1/reviews";
@@ -127,5 +128,33 @@ public class ReviewsUnitTest {
             .exchange()
             .expectStatus()
             .isNoContent();
+    }
+
+    @Test
+    void addReview_validation(){
+        //given
+        var review = new Review(null, null, "Awesome Movie", -9.0);
+
+        when(reviewReactiveRepository.save(isA(Review.class)))
+            .thenReturn(Mono.just(new Review("abc", null, "Awesome Movie", 9.0)));
+
+        //when
+        webTestClient.post()
+            .uri(REVIEWS_URL)
+            .bodyValue(review)
+            .exchange()
+            .expectStatus()
+            .isBadRequest()
+            .expectBody(String.class)
+            .isEqualTo("rating.movieInfoId: must not be null,rating.negative: please pass a none negative value");
+/*            .isCreated()
+            .expectBody(Review.class)
+            .consumeWith(movieInfoEntityExchangeResult -> {
+                var savedReview = movieInfoEntityExchangeResult.getResponseBody();
+                assert savedReview != null;
+                assert savedReview.getReviewId() != null;
+            });*/
+
+        //then
     }
 }
