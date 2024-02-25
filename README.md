@@ -1,26 +1,13 @@
-# reactive-spring-webflux
-Spring Webflux
+# Spring Webflux 학습
 
-#### Install Mongo DB in MAC
+### Udemy 강의
 
-- Run the below command to install the **MongoDB**.
+https://ssginc.udemy.com/course/build-reactive-restful-apis-using-spring-boot-webflux
 
-```
-brew services stop mongodb
-brew uninstall mongodb
+WebFlux 란?
+Non-Blocking 을 지향하는 API 통신 
 
-brew tap mongodb/brew
-brew install mongodb-community
-```
 
--  How to restart MongoDB in your local machine.
-
-```
-brew services restart mongodb-community
-```
-
-#### Install Mongo DB in Windows
-
-- Follow the steps in the below link to install Mongo db in Windows.
-
-https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/
+학습목표
+- webflux 사용방법, Junit5 로 테스트 코드 작성 방법
+- wireMock 로 MSA  통합 테스트
