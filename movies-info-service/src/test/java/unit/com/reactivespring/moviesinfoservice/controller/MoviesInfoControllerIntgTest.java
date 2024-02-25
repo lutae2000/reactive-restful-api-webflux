@@ -69,10 +69,43 @@ class MoviesInfoControllerIntgTest {
                 assert savedMovieInfo != null;
                 assert savedMovieInfo.getMovieInfoId() != null;
         });
-
-
-
         //then
+    }
+
+    @Test
+    void getAllMovieInfos_stteam(){
+        //given
+        var movieInfo = new MovieInfo(null, "Batman begins1", 2005, List.of("Christin Bale", "Michael cane"),LocalDate.parse("2005-06-15"));
+
+        //when
+        webTestClient.post()
+            .uri(MOVIE_INFO_URL)
+            .bodyValue(movieInfo)
+            .exchange()
+            .expectStatus()
+            .isCreated()
+            .expectBody(MovieInfo.class)
+            .consumeWith(movieEntityExchangeReturn -> {
+                var savedMovieInfo = movieEntityExchangeReturn.getResponseBody();
+                assert savedMovieInfo != null;
+                assert savedMovieInfo.getMovieInfoId() != null;
+            });
+
+        var moviesStreamFlux = webTestClient.get()
+            .uri(MOVIE_INFO_URL + "/stream")
+            .exchange()
+            .expectStatus()
+            .is2xxSuccessful()
+            .returnResult(MovieInfo.class)
+            .getResponseBody();
+
+        StepVerifier.create(moviesStreamFlux)
+            .assertNext(movieInfo1 -> {
+                assert movieInfo1.getMovieInfoId() != null;
+            })
+            .thenCancel()
+            .verify();
+
     }
 
     @Test
